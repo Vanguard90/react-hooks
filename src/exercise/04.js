@@ -4,11 +4,9 @@
 import React, {useState, useEffect} from 'react';
 import {useLocalStorageState} from '../utils';
 
-function Board() {
-  const [squares, setSquares] = useLocalStorageState(
-    'squares',
-    Array(9).fill(null),
-  );
+function Board({squares, setSquares, squaresHistory, setSquaresHistory}) {
+  // Save all history as array of squares
+  // You can go back to the index of it by clicking a button
 
   const nextValue = calculateNextValue(squares);
   const winner = calculateWinner(squares);
@@ -29,11 +27,23 @@ function Board() {
 
     const newSquares = [...squares];
     newSquares[square] = nextValue;
+    const newSquaresHistory = [...squaresHistory, newSquares];
+    window.localStorage.setItem(
+      'squaresHistory',
+      JSON.stringify(newSquaresHistory),
+    );
+    setSquaresHistory(newSquaresHistory);
+    // Put these new squares item to a new localstorage key
     return setSquares(newSquares);
   }
 
   function restart() {
     setSquares(Array(9).fill(null));
+    setSquaresHistory([Array(9).fill(null)]);
+    window.localStorage.setItem(
+      'squaresHistory',
+      JSON.stringify([Array(9).fill(null)]),
+    );
   }
 
   function renderSquare(i) {
@@ -75,10 +85,30 @@ function Board() {
 }
 
 function Game() {
+  const [squares, setSquares] = useLocalStorageState(
+    'squares',
+    Array(9).fill(null),
+  );
+
+  const [squaresHistory, setSquaresHistory] = useLocalStorageState(
+    'squaresHistory',
+    [Array(9).fill(null)],
+  );
+
+  const steps = calculateSteps(squaresHistory, setSquares);
   return (
     <div className="game">
       <div className="game-board">
-        <Board />
+        <Board
+          squares={squares}
+          setSquares={setSquares}
+          squaresHistory={squaresHistory}
+          setSquaresHistory={setSquaresHistory}
+        />
+      </div>
+      <div className="game-info">
+        <div>test</div>
+        <ol>{steps}</ol>
       </div>
     </div>
   );
@@ -126,6 +156,32 @@ function calculateWinner(squares) {
     }
   }
   return null;
+}
+
+function calculateSteps(squaresHistory, setSquares) {
+  return squaresHistory.map((singleHistory, index) => {
+    let message;
+    if (index === 0) {
+      message = 'Go to game start';
+    } else {
+      message = `Go to move #${index + 1}`;
+    }
+
+    if (index === squaresHistory.length - 1) {
+      message = message + ' (Current)';
+    }
+
+    return (
+      <li
+        key={index}
+        onClick={() => {
+          setSquares(singleHistory);
+        }}
+      >
+        <button>{message}</button>
+      </li>
+    );
+  });
 }
 
 function App() {

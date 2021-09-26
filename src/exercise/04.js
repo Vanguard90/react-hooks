@@ -1,7 +1,7 @@
 // useState: tic tac toe
 // http://localhost:3000/isolated/exercise/04.js
 
-import React, {useState, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {useLocalStorageState} from '../utils';
 
 function Board({squares, setSquares, squaresHistory, setSquaresHistory}) {
